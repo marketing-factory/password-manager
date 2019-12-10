@@ -1,0 +1,11 @@
+username: testuser
+firstname: user
+lastname: name
+email: testuser@marketing-factory.de
+hashedPasswords:
+    argon2i: '$argon2i$v=19$m=65536,t=4,p=1$RWpWTmFYT1BiUTdTNlBhQg$jH9U9FcTC01E+wqeJeQEHwZKBiw8z42J6bLncIDUpJc'
+    bcrypt: $2y$10$5JvzP9LdPkD2IUvZF7PjuekPZSW6SYSzo2GO09ymS33sT5znKhLQa
+    crypt_md5: $1$$yBtY5aERUxjl2gBOV12Tb.
+    md5: fcbe573d00fb230e98f0793f7fd358fd
+    sha1: 2ad6f55de837c4c1a954ee560a9620644df1bb9a
+active: true

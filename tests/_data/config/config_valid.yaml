@@ -1,0 +1,8 @@
+mfc_password_manager:
+  system_file: systems_valid.yaml
+  database:
+    default_credentials:
+      username: db_pusher_user
+      password: test1234
+
+      #password: dRQUgNKZNffw5AkQHgDbQotJpLoAkZPqFM

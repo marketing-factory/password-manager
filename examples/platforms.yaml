@@ -1,0 +1,6 @@
+---
+sample-typo3-dev:
+  hostname: sample-typo3-dev.web-factory.de
+  database: typo3_sample
+  type: typo3_9
+  manage_admin_users: true

@@ -1,0 +1,46 @@
+{
+  "algorithm": "SHA256",
+  "check-requirements": false,
+  "chmod": "0700",
+  "compactors": [
+    "KevinGH\\Box\\Compactor\\Json",
+    "KevinGH\\Box\\Compactor\\Php"
+  ],
+  "compression": "GZ",
+  "directories": [
+    "src"
+  ],
+  "directories-bin": [
+    "config",
+    "templates",
+    "var/cache/prod",
+    "var/log"
+  ],
+  "files-bin": [
+    ".env.local.php"
+  ],
+  "finder": [
+    {
+      "notName": "/LICENSE|.*\\.md|.*\\.dist|Makefile|composer\\.json|composer\\.lock/",
+      "exclude": [
+        "doc",
+        "test",
+        "test_old",
+        "tests",
+        "Tests",
+        "vendor-bin"
+      ],
+      "in": [
+        "src",
+        "vendor"
+      ]
+    },
+    {
+      "name": "composer.json",
+      "in": "."
+    }
+  ],
+  "git-version": "package_version",
+  "main": "bin/console",
+  "output": "pwmgr.phar"
+}

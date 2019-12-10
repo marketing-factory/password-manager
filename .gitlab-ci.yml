@@ -1,0 +1,368 @@
+---
+stages:
+  - analysis
+  - prepare
+  - audit
+  - package
+#  - tests
+#  - deployment
+
+cache:
+  # cache per-branch
+  key: "$CI_BUILD_REF_NAME"
+  paths:
+    - .cache/
+
+before_script:
+  - export COMPOSER_DISABLE_XDEBUG_WARN=1
+  - export COMPOSER_NO_INTERACTION=1
+  - export COMPOSER_ALLOW_SUPERUSER=1
+
+variables:
+  GIT_STRATEGY: clone
+  COMPOSER_HOME: "$CI_PROJECT_DIR/.cache/composer"
+  IS_WORK_IN_PROGRESS: $(if [[ "$CI_COMMIT_MESSAGE" =~ ^\s*\[WIP\]\s* ]]; then echo "true"; else echo "false"; fi)
+  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.cache/yarn"
+
+.mysql_variables:
+  variables: &mysql_variables
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_USER: test
+    MYSQL_PASSWORD: test
+    WORDPRESS_DB_USER: root
+    WORDPRESS_DB_PASSWORD:  root
+    WORDPRESS_DB_NAME: wordpress
+    WORDPRESS_DB_PORT: 3306
+    WORDPRESS_TABLE_PREFIX: wp_
+
+analysis:code-style:
+  image: php:7.3-cli-alpine
+  stage: analysis
+  tags:
+    - docker
+    - mfc
+    - cl
+  script:
+    - find . -iname \*php -exec php -l {} > /dev/null \;
+    - curl -OL https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
+    - php phpcs.phar
+  except:
+    - master
+    - schedules
+  dependencies: []
+
+analysis:code-analysis:
+  image: docker-registry.marketing-factory.de:443/moby/php-testing-alpine/7.3:latest
+  stage: analysis
+  tags:
+    - docker
+    - mfc
+    - cl
+  script:
+    - composer install --prefer-dist --no-progress --optimize-autoloader
+    - composer phpstan
+  except:
+    - master
+    - schedules
+  dependencies: []
+
+prepare:collect-build-dependencies:
+  image: docker-registry.marketing-factory.de:443/moby/php-testing-alpine/7.3:latest
+  stage: prepare
+  tags:
+    - docker
+    - mfc
+    - cl
+  script:
+    - composer install --no-dev --prefer-dist --no-scripts --no-progress --no-autoloader
+  except:
+    - master
+  artifacts:
+    name: $CI_JOB_NAME:$CI_COMMIT_SHA
+    expire_in: 30 mins
+    paths:
+      - ./vendor
+  dependencies: []
+
+audit:php-security-check:
+  image: php:7.3-cli-alpine
+  stage: audit
+  tags:
+    - docker
+    - mfc
+    - cl
+  script:
+    - curl -OL http://get.sensiolabs.org/security-checker.phar
+    - php security-checker.phar security:check
+  only:
+    refs:
+      - schedules
+    variables:
+      - $SCHEDULE == 'audit'
+      - $AUDIT == 'php'
+  dependencies: []
+
+audit:outdated-composer-dependencies:
+  image: docker-registry.marketing-factory.de:443/moby/php-testing-alpine/7.3:latest
+  stage: audit
+  tags:
+    - docker
+    - mfc
+    - cl
+  script:
+    - echo '```' > ./composer-outdated.txt
+    - composer outdated --minor-only --no-ansi | tee -a ./composer-outdated.txt
+    - echo '```' >> ./composer-outdated.txt
+  only:
+    refs:
+      - schedules
+    variables:
+      - $SCHEDULE == 'outdated'
+  dependencies:
+    - prepare:collect-build-dependencies
+
+package:phar:
+  image: docker-registry.marketing-factory.de:443/moby/php-testing-alpine/7.3:latest
+  stage: package
+  tags:
+    - docker
+    - mfc
+    - cl
+  before_script:
+    - wget -O /usr/local/bin/box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x /usr/local/bin/box
+  script:
+    - sed -i "s#^MAILER_DSN=.*\$#MAILER_DSN=${MAILER_DSN}#" .env
+    - composer install --no-dev --optimize-autoloader
+    - composer dump-env prod
+    - bin/console cache:clear
+    - bin/console cache:warmup
+    - box compile
+  except:
+    - master
+  artifacts:
+    name: $CI_JOB_NAME:$CI_COMMIT_SHA
+    expire_in: 30 mins
+    paths:
+      - ./pwmgr.phar
+  dependencies:
+    - prepare:collect-build-dependencies
+
+#tests:wordpress:latest:
+#  stage: tests
+#  image: webdevops/php:7.3
+#  tags:
+#    - docker
+#    - mfc
+#    - cl
+#  services:
+#    - name: mariadb:10.2
+#      alias: db
+#  variables:
+#    <<: *mysql_variables
+#    MYSQL_DATABASE: 'wordpress'
+#    DATABASE_SERVER_VERSION: "5.5.5-mariadb-10.2"
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#    TEST_SYSTEM: "wordpress"
+#  before_script:
+#    - echo "APP_DEBUG=false" >> .env.test
+#    - echo "TEST_SYSTEM=wordpress" >> .env.test
+#  script:
+#    - curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+#    - wp core download --allow-root
+#    - wp core config --dbname=wordpress --dbuser=root --dbpass=root --dbhost=db --skip-check --allow-root
+#    - wp core install --url=http://localhost:8080 --title=WordPress --admin_user=admin --admin_password=admin --admin_email=egh@marketing-factory.de --allow-root
+#    - APP_ENV=test composer install --prefer-dist --no-progress --optimize-autoloader
+#    - APP_ENV=test php -ddate.timezone=UTC bin/console cache:warmup
+#    - APP_ENV=test php -ddate.timezone=UTC vendor/bin/codecept -v --no-colors run -x incomplete || if test "$IS_WORK_IN_PROGRESS" == "true" ; then exit 0; else exit 1; fi
+#  except:
+#    refs:
+#      - master
+#      - schedules
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /Merge tag/
+#      - $SCHEDULE == 'audit'
+#      - $SCHEDULE == 'outdated'
+#  dependencies: []
+#
+#tests:shopware:v5.6:
+#  stage: tests
+#  image: webdevops/php:7.3
+#  tags:
+#    - docker
+#    - mfc
+#    - cl
+#  services:
+#    - name: mariadb:10.2
+#      alias: db
+#  variables:
+#    <<: *mysql_variables
+#    MYSQL_DATABASE: 'shopware'
+#    DATABASE_SERVER_VERSION: "5.5.5-mariadb-10.2"
+#    TEST_SYSTEM: "shopware"
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#  before_script:
+#    - echo "APP_DEBUG=false" >> .env.test
+#    - echo "TEST_SYSTEM=shopware" >> .env.test
+#  script:
+#    - mkdir shopware && cd shopware && wget https://releases.shopware.com/install_5.6.2_6cadc5c14bad4ea8839395461ea42dbc359e9666.zip
+#    - unzip install_5.6.2_6cadc5c14bad4ea8839395461ea42dbc359e9666.zip && cd ..
+#    - php shopware/recovery/install/index.php --no-interaction --quiet --no-skip-import --db-host="db" --db-user="root" --db-password="root"
+#      --db-name="shopware" --shop-locale="de_DE" --shop-host="http://localhost:8080" --shop-path="/shopware-5.6" --shop-name="test" --shop-email="egh@marketing-factory.de"
+#      --shop-currency="EUR" --admin-username="admin" --admin-password="admin" --admin-email="egh@marketing-factory.de" --admin-name="admin" --admin-locale="de_DE"
+#    - APP_ENV=test composer install --prefer-dist --no-progress --optimize-autoloader
+#    - APP_ENV=test php -ddate.timezone=UTC bin/console cache:warmup
+#    - APP_ENV=test php -ddate.timezone=UTC vendor/bin/codecept -v --no-colors run -x incomplete || if test "$IS_WORK_IN_PROGRESS" == "true" ; then exit 0; else exit 1; fi
+#  except:
+#    refs:
+#      - master
+#      - schedules
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /Merge tag/
+#      - $SCHEDULE == 'audit'
+#      - $SCHEDULE == 'outdated'
+#  dependencies: []
+#
+#tests:typo3:8:
+#  stage: tests
+#  image: webdevops/php:7.3
+#  variables:
+#    <<: *mysql_variables
+#    MYSQL_DATABASE: 'typo3'
+#    MYSQL_PORT: '3306'
+#    DB_PASS: 'root'
+#    TEST_SYSTEM: "typo3_8"
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#    TYPO3_INSTALL_DB_USER: 'root'
+#    TYPO3_INSTALL_DB_PASSWORD: 'root'
+#    TYPO3_INSTALL_DB_HOST: 'db'
+#    TYPO3_INSTALL_DB_PORT: '3306'
+#    TYPO3_INSTALL_DB_DBNAME: 'typo3'
+#    TYPO3_INSTALL_ADMIN_USER: 'admin'
+#    TYPO3_INSTALL_ADMIN_PASSWORD: '434tgffWWWee!?'
+#    TYPO3_INSTALL_SITE_NAME: 'test'
+#    TYPO3_INSTALL_DB_USE_EXISTING: '1'
+#
+#  services:
+#    - name: mariadb:10.2
+#      alias: db
+#      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+#  tags:
+#    - docker
+#    - mfc
+#    - cl
+#  before_script:
+#    - echo "APP_DEBUG=false" >> .env.test
+#    - echo "TEST_SYSTEM=typo3_8" >> .env.test
+#  script:
+#    - mkdir typo3
+#    - cp -b tests/typo3_8/composer.json typo3
+#    - cd typo3 && composer install --prefer-dist --no-progress --optimize-autoloader && cd ..
+#    - php typo3/vendor/bin/typo3cms install:setup
+#    - APP_ENV=test composer install --prefer-dist --no-progress --optimize-autoloader
+#    - APP_ENV=test php -ddate.timezone=UTC bin/console cache:warmup
+#    - APP_ENV=test php -ddate.timezone=UTC vendor/bin/codecept -v --no-colors run -x incomplete || if test "$IS_WORK_IN_PROGRESS" == "true" ; then exit 0; else exit 1; fi
+#  except:
+#    refs:
+#      - master
+#      - schedules
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /Merge tag/
+#      - $SCHEDULE == 'audit'
+#      - $SCHEDULE == 'outdated'
+#  dependencies: []
+#
+#tests:typo3:9:
+#  stage: tests
+#  image: webdevops/php:7.3
+#  variables:
+#    <<: *mysql_variables
+#    MYSQL_DATABASE: 'typo3'
+#    MYSQL_PORT: '3306'
+#    DB_PASS: 'root'
+#    TEST_SYSTEM: "typo3_9"
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#    TYPO3_INSTALL_DB_USER: 'root'
+#    TYPO3_INSTALL_DB_PASSWORD: 'root'
+#    TYPO3_INSTALL_DB_HOST: 'db'
+#    TYPO3_INSTALL_DB_PORT: '3306'
+#    TYPO3_INSTALL_DB_DBNAME: 'typo3'
+#    TYPO3_INSTALL_ADMIN_USER: 'admin'
+#    TYPO3_INSTALL_ADMIN_PASSWORD: '434tgffWWWee!?'
+#    TYPO3_INSTALL_SITE_NAME: 'test'
+#    TYPO3_INSTALL_DB_USE_EXISTING: '1'
+#  services:
+#    - name: mariadb:latest
+#      alias: db
+#      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+#  tags:
+#    - docker
+#    - mfc
+#    - cl
+#  before_script:
+#    - echo "APP_DEBUG=false" >> .env.test
+#    - echo "TEST_SYSTEM=typo3_9" >> .env.test
+#  script:
+#    - composer create-project typo3/cms-base-distribution typo3 9.5 --no-progress
+#    - php typo3/vendor/bin/typo3cms install:setup
+#    - APP_ENV=test composer install --prefer-dist --no-progress --optimize-autoloader
+#    - APP_ENV=test php -ddate.timezone=UTC bin/console cache:warmup
+#    - APP_ENV=test php -ddate.timezone=UTC vendor/bin/codecept -v --no-colors run -x incomplete || if test "$IS_WORK_IN_PROGRESS" == "true" ; then exit 0; else exit 1; fi
+#  except:
+#    refs:
+#      - master
+#      - schedules
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /Merge tag/
+#      - $SCHEDULE == 'audit'
+#      - $SCHEDULE == 'outdated'
+#  dependencies: []
+#
+#tests:typo3:7:
+#  stage: tests
+#  image: webdevops/php:7.2
+#  variables:
+#    <<: *mysql_variables
+#    MYSQL_DATABASE: 'typo3'
+#    MYSQL_PORT: '3306'
+#    DB_PASS: 'root'
+#    TEST_SYSTEM: "typo3_7"
+#    COMPOSER_ALLOW_SUPERUSER: 1
+#    TYPO3_INSTALL_DB_USER: 'root'
+#    TYPO3_INSTALL_DB_PASSWORD: 'root'
+#    TYPO3_INSTALL_DB_HOST: 'db'
+#    TYPO3_INSTALL_DB_PORT: '3306'
+#    TYPO3_INSTALL_DB_DBNAME: 'typo3'
+#    TYPO3_INSTALL_ADMIN_USER: 'admin'
+#    TYPO3_INSTALL_ADMIN_PASSWORD: '434tgffWWWee!?'
+#    TYPO3_INSTALL_SITE_NAME: 'test'
+#    TYPO3_INSTALL_DB_USE_EXISTING: '1'
+#
+#  services:
+#    - name: mariadb:5.5
+#      alias: db
+#      command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci"]
+#  tags:
+#    - docker
+#    - mfc
+#    - cl
+#  before_script:
+#    - echo "APP_DEBUG=false" >> .env.test
+#    - echo "TEST_SYSTEM=typo3_8" >> .env.test
+#  script:
+#    - mkdir typo3
+#    - cp -b tests/typo3_7/composer.json typo3
+#    - cd typo3 && composer install --prefer-dist --no-progress --optimize-autoloader && cd ..
+#    - php typo3/vendor/bin/typo3cms install:setup --non-interactive --use-existing-database --database-user-name="root" --database-user-password="root" --database-host-name="db" --database-port="3306" --database-name="typo3" --admin-user-name="root" --admin-password="434tgffWWWee!?" --site-name="Test"
+#    - APP_ENV=test composer install --prefer-dist --no-progress --optimize-autoloader
+#    - APP_ENV=test php -ddate.timezone=UTC bin/console cache:warmup
+#    - APP_ENV=test php -ddate.timezone=UTC vendor/bin/codecept -v --no-colors run -x incomplete || if test "$IS_WORK_IN_PROGRESS" == "true" ; then exit 0; else exit 1; fi
+#  except:
+#    refs:
+#      - master
+#      - schedules
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /Merge tag/
+#      - $SCHEDULE == 'audit'
+#      - $SCHEDULE == 'outdated'
+#  dependencies: []
+#

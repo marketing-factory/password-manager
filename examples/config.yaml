@@ -1,0 +1,7 @@
+mfc_password_manager:
+  mail:
+    dsn: "smtp://srelay-int.web-factory.de"
+  database:
+    default_credentials:
+      username: db_pusher_user
+      password: test1234
