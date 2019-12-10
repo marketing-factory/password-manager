@@ -25,7 +25,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Install Box
-        run: wget -O /usr/local/bin/box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x /usr/local/bin/box
+        run: wget -O /tmp/box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x /tmp/box
 
       - name: Build PHAR
         run: sed -i "s#^MAILER_DSN=.*\$#MAILER_DSN=${MAILER_DSN}#" .env && composer install --no-dev --optimize-autoloader && composer dump-env prod && bin/console cache:clear && bin/console cache:warmup && box compile
