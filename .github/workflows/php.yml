@@ -39,9 +39,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
       - name: Install Box
         run: wget -O ./box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x ./box
 
