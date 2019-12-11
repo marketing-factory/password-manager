@@ -421,6 +421,9 @@
             "tests/.gitignore"
         ]
     },
+    "symfony/polyfill-ctype": {
+        "version": "v1.13.1"
+    },
     "symfony/polyfill-intl-idn": {
         "version": "v1.12.0"
     },
