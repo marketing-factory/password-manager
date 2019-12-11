@@ -27,7 +27,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v1
         with:
-          php-version: '7.4'
+          php-version: '7.3'
           extensions: ctype, intl, json, mbstring, mysqli, pdo
           coverage: none
 
@@ -54,7 +54,7 @@ jobs:
       - name: Build PHAR
         uses: docker://php:7.3-cli-alpine3.10
         with:
-          args: "-c 'curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile'"
+          args: "/bin/sh -c 'curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile'"
 
 #  build-shell:
 #    runs-on: ubuntu-latest
