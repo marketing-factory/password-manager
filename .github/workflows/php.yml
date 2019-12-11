@@ -67,15 +67,15 @@ jobs:
           args: "/bin/sh -c \"apk --no-cache add git && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile\""
 
       - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }}
-            release_name: Release ${{ github.ref }}
-            draft: false
-            prerelease: false
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
       - name: Upload Release phar
         id: upload-release-asset
