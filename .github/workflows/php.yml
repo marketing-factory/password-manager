@@ -26,7 +26,6 @@ jobs:
         with:
           php-version: '7.3'
           extensions: ctype, intl, json, mbstring, mysqli, pdo
-          pecl: false
 
       - name: Get Composer Cache Directory
         id: composer-cache
