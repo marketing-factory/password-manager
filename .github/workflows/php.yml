@@ -55,7 +55,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          php -i
           sed -i "s#^MAILER_DSN=.*\$#MAILER_DSN=${{ secrets.MAILER_DSN }}#" .env
           composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
           composer dump-env prod
@@ -65,7 +64,7 @@ jobs:
       - name: Build PHAR
         uses: docker://php:7.3-cli-alpine3.10
         with:
-          args: "/bin/sh -c \"curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile\""
+          args: "/bin/sh -c \"apk --no-cache add git && curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile\""
 
 #  build-shell:
 #    runs-on: ubuntu-latest
