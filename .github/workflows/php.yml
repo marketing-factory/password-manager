@@ -42,10 +42,7 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Install Box
-        run: wget -O ./box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x ./box
-
-      - name: Build PHAR
+      - name: Install dependencies
         run: |
           php -i
           sed -i "s#^MAILER_DSN=.*\$#MAILER_DSN=${{ secrets.MAILER_DSN }}#" .env
@@ -53,4 +50,48 @@ jobs:
           composer dump-env prod
           bin/console cache:clear
           bin/console cache:warmup
-          ./box compile
+
+      - name: Build PHAR
+        uses: docker://php:7.3-cli-alpine3.10
+        with:
+          entrypoint: "curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile"
+
+#  build-shell:
+#    runs-on: ubuntu-latest
+#
+#    needs:
+#      - analysis
+#
+#    steps:
+#      - uses: actions/checkout@v1
+#
+#      - name: Setup PHP
+#        uses: shivammathur/setup-php@v1
+#        with:
+#          php-version: '7.4'
+#          extensions: ctype, intl, json, mbstring, mysqli, pdo
+#          coverage: none
+#
+#      - name: Get Composer Cache Directory
+#        id: composer-cache
+#        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+#
+#      - name: Cache dependencies
+#        uses: actions/cache@v1
+#        with:
+#          path: ${{ steps.composer-cache.outputs.dir }}
+#          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+#          restore-keys: ${{ runner.os }}-composer-
+#
+#      - name: Install Box
+#        run: wget -O ./box https://github.com/humbug/box/releases/download/3.8.3/box.phar && chmod +x ./box
+#
+#      - name: Build PHAR
+#        run: |
+#          php -i
+#          sed -i "s#^MAILER_DSN=.*\$#MAILER_DSN=${{ secrets.MAILER_DSN }}#" .env
+#          composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+#          composer dump-env prod
+#          bin/console cache:clear
+#          bin/console cache:warmup
+#          ./box compile
