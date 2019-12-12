@@ -1,39 +1,22 @@
 name: phar build
 
-on: [push]
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
-  analysis:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v1
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
-      - name: Run PHPStan
-        run: composer phpstan
-
   build:
     runs-on: ubuntu-latest
 
-    needs:
-      - analysis
-
     steps:
       - uses: actions/checkout@v1
+
+      - name: Get commit message
+        run: |
+          echo ::set-env name=commitmsg::$(git tag -l --format='%(contents)' ${GITHUB_REF/refs\/tags\//})
+      - name: Show commit message
+        run : echo $commitmsg
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v1
@@ -74,8 +57,9 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body: $commitmsg
           draft: false
-          prerelease: false
+          prerelease: contains('-rc', $commitmsg) || contains('-alpha', $commitmsg) || contains('-beta', $commitmsg)
 
       - name: Upload Release phar
         id: upload-release-asset
