@@ -59,7 +59,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: $commitmsg
           draft: false
-          prerelease: contains('-rc', $commitmsg) || contains('-alpha', $commitmsg) || contains('-beta', $commitmsg)
+          prerelease: contains('-rc', ${GITHUB_REF/refs\/tags\//}) || contains('-alpha', ${GITHUB_REF/refs\/tags\//}) || contains('-beta', ${GITHUB_REF/refs\/tags\//})
 
       - name: Upload Release phar
         id: upload-release-asset
