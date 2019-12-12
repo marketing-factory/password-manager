@@ -1,6 +1,9 @@
 name: phar build
 
-on: [push]
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
   analysis:
