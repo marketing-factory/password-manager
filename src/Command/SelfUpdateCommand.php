@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mfc\PasswordManager\Command;
 
+use Composer\Semver\VersionParser;
+use Humbug\SelfUpdate\Strategy\GithubStrategy;
 use Humbug\SelfUpdate\Updater;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,10 +30,17 @@ class SelfUpdateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $currentVersion = '@package_version@';
+
         $updater = new Updater(null, false, Updater::STRATEGY_GITHUB);
         $updater->getStrategy()->setPackageName('marketing-factory/password-manager');
         $updater->getStrategy()->setPharName('pwmgr.phar');
-        $updater->getStrategy()->setCurrentLocalVersion('@package_version@');
+        $updater->getStrategy()->setCurrentLocalVersion($currentVersion);
+
+        if ($currentVersion === '@package_version' . '@'
+            || VersionParser::parseStability($currentVersion) !== 'stable') {
+            $updater->getStrategy()->setStability(GithubStrategy::ANY);
+        }
 
         try {
             $result = $updater->update();

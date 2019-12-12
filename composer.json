@@ -20,6 +20,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "ext-mysqli": "*",
+    "composer/semver": "^1.5",
     "doctrine/dbal": "^2.10",
     "erusev/parsedown": "^1.7",
     "hackzilla/password-generator": "^1.4",
