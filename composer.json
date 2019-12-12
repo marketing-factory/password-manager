@@ -1,6 +1,19 @@
 {
+  "name": "marketing-factory/password-manager",
   "type": "project",
-  "license": "proprietary",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eduardo Garces Hernandez",
+      "email": "egh@marketing-factory.de",
+      "role": "Developer"
+    },
+    {
+      "name": "Christian Spoo",
+      "email": "cs@marketing-factory.de",
+      "role": "Developer"
+    }
+  ],
   "require": {
     "php": "^7.3",
     "ext-ctype": "*",
@@ -11,6 +24,7 @@
     "erusev/parsedown": "^1.7",
     "hackzilla/password-generator": "^1.4",
     "hautelook/phpass": "1.0.0",
+    "padraic/phar-updater": "^1.0",
     "symfony/console": "*",
     "symfony/dotenv": "*",
     "symfony/finder": "*",
