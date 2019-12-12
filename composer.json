@@ -1,6 +1,19 @@
 {
+  "name": "marketing-factory/password-manager",
   "type": "project",
-  "license": "proprietary",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eduardo Garces Hernandez",
+      "email": "egh@marketing-factory.de",
+      "role": "Developer"
+    },
+    {
+      "name": "Christian Spoo",
+      "email": "cs@marketing-factory.de",
+      "role": "Developer"
+    }
+  ],
   "require": {
     "php": "^7.3",
     "ext-ctype": "*",
