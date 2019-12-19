@@ -67,6 +67,17 @@ class PasswordRolloutService
         return $this;
     }
 
+    public function rolloutUser($user): self
+    {
+        if (!$user instanceof User) {
+            $user = $this->userStorage->loadUser($user);
+        }
+
+        $this->doRollout([$user]);
+
+        return $this;
+    }
+
     public function rolloutUsers(): self
     {
         $users = $this->userStorage->getUsers();
@@ -74,6 +85,18 @@ class PasswordRolloutService
             return $user->isActive();
         });
 
+        $this->doRollout($users, true);
+
+        return $this;
+    }
+
+    /**
+     * @param array $users
+     * @param bool $demoteUnknownUsers
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function doRollout(array $users, bool $demoteUnknownUsers = false): void
+    {
         $platforms = $this->configurationService['[platforms]'];
 
         $defaultUsername = $this->configurationService['[database][default_credentials][username]'];
@@ -81,19 +104,24 @@ class PasswordRolloutService
 
         /** @var Platform $platform */
         foreach ($platforms as $platformName => $platform) {
-            $this->logger->info('Working on platform {platform} with type {type} on {hostname}', [
-                'platform' => $platformName,
-                'type' => $platform->getType(),
-                'hostname' => $platform->getHostname()
-            ]);
+            $this->logger->info(
+                'Working on platform {platform} with type {type} on {hostname}',
+                [
+                    'platform' => $platformName,
+                    'type' => $platform->getType(),
+                    'hostname' => $platform->getHostname()
+                ]
+            );
 
-            $databaseConnection = DriverManager::getConnection([
-                'dbname' => $platform->getDatabase(),
-                'user' => $platform->getUsername() ?? $defaultUsername,
-                'password' => $platform->getPassword() ?? $defaultPassword,
-                'host' => $platform->getHostname(),
-                'driver' => 'pdo_mysql'
-            ]);
+            $databaseConnection = DriverManager::getConnection(
+                [
+                    'dbname' => $platform->getDatabase(),
+                    'user' => $platform->getUsername() ?? $defaultUsername,
+                    'password' => $platform->getPassword() ?? $defaultPassword,
+                    'host' => $platform->getHostname(),
+                    'driver' => 'pdo_mysql'
+                ]
+            );
 
             $updater = $this->platformRegistry->getUpdaterForPlatform($platform);
             if ($updater instanceof DatabaseUpdaterInterface) {
@@ -104,10 +132,13 @@ class PasswordRolloutService
 
             /** @var User $user */
             foreach ($users as $user) {
-                $this->logger->info('Rolling out user {username} to {hostname}', [
-                    'username' => $user->getUsername(),
-                    'hostname' => $platform->getHostname()
-                ]);
+                $this->logger->info(
+                    'Rolling out user {username} to {hostname}',
+                    [
+                        'username' => $user->getUsername(),
+                        'hostname' => $platform->getHostname()
+                    ]
+                );
 
                 $hashAlgorithm = $updater->getHashAlgorithm();
                 $hashedPasswords = $user->getHashedPasswords();
@@ -136,17 +167,18 @@ class PasswordRolloutService
                 $activeAdmins[] = $user->getUsername();
             }
 
-            if ($platform->getManageAdminUsers()) {
-                $this->logger->info('Demoting all other admin users on {hostname}', [
-                    'hostname' => $platform->getHostname()
-                ]);
+            if ($demoteUnknownUsers && $platform->getManageAdminUsers()) {
+                $this->logger->info(
+                    'Demoting all other admin users on {hostname}',
+                    [
+                        'hostname' => $platform->getHostname()
+                    ]
+                );
 
                 if (!$this->dryRun) {
                     $updater->demoteUnknownUsers($activeAdmins);
                 }
             }
         }
-
-        return $this;
     }
 }
