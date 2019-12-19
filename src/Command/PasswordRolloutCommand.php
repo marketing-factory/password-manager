@@ -8,6 +8,7 @@ use Mfc\PasswordManager\Services\ConfigurationService;
 use Mfc\PasswordManager\Services\PasswordRolloutService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -50,7 +51,8 @@ class PasswordRolloutCommand extends Command
             ->setAliases(['rollout'])
             ->setDescription('Rollout users and passwords')
             ->configureConfigDirectory()
-            ->configureDryRun();
+            ->configureDryRun()
+            ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'Only roll out a single user');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -62,7 +64,11 @@ class PasswordRolloutCommand extends Command
             $this->passwordRolloutService->enableDryRun();
         }
 
-        $this->passwordRolloutService->rolloutUsers();
+        if ($user = $input->getOption('user')) {
+            $this->passwordRolloutService->rolloutUser($user);
+        } else {
+            $this->passwordRolloutService->rolloutUsers();
+        }
 
         return 0;
     }

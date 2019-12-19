@@ -20,7 +20,7 @@ trait ConfigDirectoryTrait
             'config',
             'c',
             InputOption::VALUE_REQUIRED,
-            'Path to the configuration file (usually config.yaml)'
+            'Path to the configuration file (defaults to /etc/pwmgr/config.yaml)'
         );
 
         return $this;
