@@ -20,6 +20,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "ext-mysqli": "*",
+    "ext-pdo": "*",
     "composer/semver": "^1.5",
     "doctrine/dbal": "^2.10",
     "erusev/parsedown": "^1.7",
