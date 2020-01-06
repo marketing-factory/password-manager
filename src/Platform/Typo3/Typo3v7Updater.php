@@ -17,7 +17,7 @@ class Typo3v7Updater extends Typo3Updater
      */
     public function getHashAlgorithm(): string
     {
-        return AccountUpdaterInterface::ALGO_BCRYPT;
+        return AccountUpdaterInterface::ALGO_CRYPT_MD5;
     }
 
     /**
