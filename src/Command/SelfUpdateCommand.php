@@ -37,6 +37,9 @@ class SelfUpdateCommand extends Command
         $updater->getStrategy()->setPharName('pwmgr.phar');
         $updater->getStrategy()->setCurrentLocalVersion($currentVersion);
 
+        /**
+         *
+         */
         if ($currentVersion === '@package_version' . '@'
             || VersionParser::parseStability($currentVersion) !== 'stable') {
             $updater->getStrategy()->setStability(GithubStrategy::ANY);

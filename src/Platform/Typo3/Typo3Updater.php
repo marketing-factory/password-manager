@@ -50,7 +50,18 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
         string $lastname,
         string $email
     ): bool {
-        if ($this->accountIsPresent($username)) {
+        try {
+            $accountPresent = $this->accountIsPresent($username);
+        } catch (\Exception $e) {
+            $this->logger->error('Could not determine whether account is present: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e
+            ]);
+
+            return false;
+        }
+
+        if ($accountPresent) {
             (new UpdateAccountTransaction(
                 $this->databaseConnection,
                 $this->logger,
