@@ -108,7 +108,42 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
             ]);
         }
 
+        if ($this->beSecurePwIsPresent($username)) {
+            $this->logger->debug('Found be_secure_pw. Updating date of last change for {username}', [
+                'username' => $username
+            ]);
+
+            (new UpdateBeSecurePwLastChangeTransaction(
+                $this->databaseConnection,
+                $this->logger,
+                $username
+            ))->execute();
+        }
+
         return true;
+    }
+
+    /**
+     * @param string $username
+     * @return bool
+     */
+    private function beSecurePwIsPresent(string $username): bool
+    {
+        $queryBuilder = $this->databaseConnection->createQueryBuilder();
+        $query = $queryBuilder
+            ->select('username')
+            ->from('be_users')
+            ->where($queryBuilder->expr()->eq('username', $this->databaseConnection->quote($username)))
+            ->setMaxResults(1);
+        $this->logger->debug($query->getSQL());
+
+        $statement = $query->execute();
+        if (!($statement->rowCount() > 0)) {
+            return false;
+        }
+
+        $row = $statement->fetch();
+        return isset($row['tx_besecurepw_lastpwchange']);
     }
 
     /**
