@@ -131,7 +131,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
     {
         $queryBuilder = $this->databaseConnection->createQueryBuilder();
         $query = $queryBuilder
-            ->select('username')
+            ->select('*')
             ->from('be_users')
             ->where($queryBuilder->expr()->eq('username', $this->databaseConnection->quote($username)))
             ->setMaxResults(1);
