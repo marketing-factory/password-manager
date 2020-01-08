@@ -160,7 +160,8 @@ class PasswordRolloutService
                         true,
                         $user->getFirstname(),
                         $user->getLastname(),
-                        $user->getEmail()
+                        $user->getEmail(),
+                        $user->isActive()
                     );
                 }
 

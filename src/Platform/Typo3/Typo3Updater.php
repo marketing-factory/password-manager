@@ -40,6 +40,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
      * @param string $firstname
      * @param string $lastname
      * @param string $email
+     * @param bool $isActive
      * @return bool
      */
     public function updateAccountByUsername(
@@ -48,7 +49,8 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
         bool $isAdmin,
         string $firstname,
         string $lastname,
-        string $email
+        string $email,
+        bool $isActive = true
     ): bool {
         try {
             $accountPresent = $this->accountIsPresent($username);
@@ -77,6 +79,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                     ),
                     'email' => $this->databaseConnection->quote($email),
                     'admin' => $this->databaseConnection->quote($isAdmin ? 1 : 0),
+                    'disable' => $this->databaseConnection->quote($isActive ? 0 : 1),
                     'deleted' => $this->databaseConnection->quote(0),
                 ]
             ))->execute();
@@ -97,6 +100,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                     'email' => $this->databaseConnection->quote($email),
                     'admin' => $this->databaseConnection->quote($isAdmin ? 1 : 0),
                     'deleted' => $this->databaseConnection->quote(0),
+                    'disable' => $this->databaseConnection->quote($isActive ? 0 : 1),
                     'tstamp' => $this->databaseConnection->quote(time()),
                     'crdate' => $this->databaseConnection->quote(time()),
                 ]

@@ -33,6 +33,7 @@ interface AccountUpdaterInterface
      * @param string $firstname
      * @param string $lastname
      * @param string $email
+     * @param bool $isActive
      * @return bool
      */
     public function updateAccountByUsername(
@@ -41,7 +42,8 @@ interface AccountUpdaterInterface
         bool $isAdmin,
         string $firstname,
         string $lastname,
-        string $email
+        string $email,
+        bool $isActive = true
     ): bool;
 
     /**
