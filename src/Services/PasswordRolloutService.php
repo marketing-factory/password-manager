@@ -104,81 +104,88 @@ class PasswordRolloutService
 
         /** @var Platform $platform */
         foreach ($platforms as $platformName => $platform) {
-            $this->logger->info(
-                'Working on platform {platform} with type {type} on {hostname}',
-                [
-                    'platform' => $platformName,
-                    'type' => $platform->getType(),
-                    'hostname' => $platform->getHostname()
-                ]
-            );
-
-            $databaseConnection = DriverManager::getConnection(
-                [
-                    'dbname' => $platform->getDatabase(),
-                    'user' => $platform->getUsername() ?? $defaultUsername,
-                    'password' => $platform->getPassword() ?? $defaultPassword,
-                    'host' => $platform->getHostname(),
-                    'driver' => 'pdo_mysql'
-                ]
-            );
-
-            $updater = $this->platformRegistry->getUpdaterForPlatform($platform);
-            if ($updater instanceof DatabaseUpdaterInterface) {
-                $updater->setDatabaseConnection($databaseConnection);
-            }
-
-            $activeAdmins = [];
-
-            /** @var User $user */
-            foreach ($users as $user) {
+            try {
                 $this->logger->info(
-                    'Rolling out user {username} to {hostname}',
+                    'Working on platform {platform} with type {type} on {hostname}',
                     [
-                        'username' => $user->getUsername(),
+                        'platform' => $platformName,
+                        'type' => $platform->getType(),
                         'hostname' => $platform->getHostname()
                     ]
                 );
 
-                $hashAlgorithm = $updater->getHashAlgorithm();
-                $hashedPasswords = $user->getHashedPasswords();
-                if (!isset($hashedPasswords[$hashAlgorithm])) {
-                    $this->logger->error(
-                        'User {username} does not have a password hash for the {algorithm} algorithm. Skipping...',
+                $databaseConnection = DriverManager::getConnection(
+                    [
+                        'dbname' => $platform->getDatabase(),
+                        'user' => $platform->getUsername() ?? $defaultUsername,
+                        'password' => $platform->getPassword() ?? $defaultPassword,
+                        'host' => $platform->getHostname(),
+                        'driver' => 'pdo_mysql'
+                    ]
+                );
+
+                $updater = $this->platformRegistry->getUpdaterForPlatform($platform);
+                if ($updater instanceof DatabaseUpdaterInterface) {
+                    $updater->setDatabaseConnection($databaseConnection);
+                }
+
+                $activeAdmins = [];
+
+                /** @var User $user */
+                foreach ($users as $user) {
+                    $this->logger->info(
+                        'Rolling out user {username} to {hostname}',
                         [
                             'username' => $user->getUsername(),
-                            'algorithm' => $hashAlgorithm
+                            'hostname' => $platform->getHostname()
                         ]
                     );
-                    continue;
+
+                    $hashAlgorithm = $updater->getHashAlgorithm();
+                    $hashedPasswords = $user->getHashedPasswords();
+                    if (!isset($hashedPasswords[$hashAlgorithm])) {
+                        $this->logger->error(
+                            'User {username} does not have a password hash for the {algorithm} algorithm. Skipping...',
+                            [
+                                'username' => $user->getUsername(),
+                                'algorithm' => $hashAlgorithm
+                            ]
+                        );
+                        continue;
+                    }
+
+                    if (!$this->dryRun) {
+                        $updater->updateAccountByUsername(
+                            $user->getUsername(),
+                            $hashedPasswords[$hashAlgorithm],
+                            true,
+                            $user->getFirstname(),
+                            $user->getLastname(),
+                            $user->getEmail(),
+                            $user->isActive()
+                        );
+                    }
+
+                    $activeAdmins[] = $user->getUsername();
                 }
 
-                if (!$this->dryRun) {
-                    $updater->updateAccountByUsername(
-                        $user->getUsername(),
-                        $hashedPasswords[$hashAlgorithm],
-                        true,
-                        $user->getFirstname(),
-                        $user->getLastname(),
-                        $user->getEmail(),
-                        $user->isActive()
+                if ($demoteUnknownUsers && $platform->getManageAdminUsers()) {
+                    $this->logger->info(
+                        'Demoting all other admin users on {hostname}',
+                        [
+                            'hostname' => $platform->getHostname()
+                        ]
                     );
+
+                    if (!$this->dryRun) {
+                        $updater->demoteUnknownUsers($activeAdmins);
+                    }
                 }
-
-                $activeAdmins[] = $user->getUsername();
-            }
-
-            if ($demoteUnknownUsers && $platform->getManageAdminUsers()) {
-                $this->logger->info(
-                    'Demoting all other admin users on {hostname}',
-                    [
-                        'hostname' => $platform->getHostname()
-                    ]
-                );
-
-                if (!$this->dryRun) {
-                    $updater->demoteUnknownUsers($activeAdmins);
-                }
+            } catch (\Exception $ex) {
+                $this->logger->alert('Exception while rolling out users to {hostname}: {message}', [
+                    'hostname' => $platform->getHostname(),
+                    'message' => $ex->getMessage()
+                ]);
             }
         }
     }
