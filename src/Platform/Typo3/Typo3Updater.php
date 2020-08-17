@@ -210,6 +210,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
         return [
             'typo3',
             'typo3_9',
+            'typo3_10',
         ];
     }
 }
