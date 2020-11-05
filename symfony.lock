@@ -41,9 +41,6 @@
     "composer/semver": {
         "version": "1.5.0"
     },
-    "composer/xdebug-handler": {
-        "version": "1.3.3"
-    },
     "doctrine/cache": {
         "version": "v1.8.1"
     },
@@ -110,9 +107,6 @@
     "hoa/ustring": {
         "version": "4.17.01.16"
     },
-    "jean85/pretty-package-versions": {
-        "version": "1.2"
-    },
     "lorenzo/pinky": {
         "version": "1.0.5"
     },
@@ -121,33 +115,6 @@
     },
     "myclabs/deep-copy": {
         "version": "1.9.3"
-    },
-    "nette/bootstrap": {
-        "version": "v3.0.0"
-    },
-    "nette/di": {
-        "version": "v3.0.1"
-    },
-    "nette/finder": {
-        "version": "v2.5.1"
-    },
-    "nette/neon": {
-        "version": "v3.0.0"
-    },
-    "nette/php-generator": {
-        "version": "v3.2.3"
-    },
-    "nette/robot-loader": {
-        "version": "v3.2.0"
-    },
-    "nette/schema": {
-        "version": "v1.0.0"
-    },
-    "nette/utils": {
-        "version": "v3.0.1"
-    },
-    "nikic/php-parser": {
-        "version": "v4.2.4"
     },
     "ocramius/package-versions": {
         "version": "1.4.0"
@@ -184,9 +151,6 @@
     },
     "phpstan/extension-installer": {
         "version": "1.0.2"
-    },
-    "phpstan/phpdoc-parser": {
-        "version": "0.3.5"
     },
     "phpstan/phpstan": {
         "version": "0.11.16"
@@ -324,6 +288,9 @@
     "symfony/dependency-injection": {
         "version": "v4.3.4"
     },
+    "symfony/deprecation-contracts": {
+        "version": "v2.2.0"
+    },
     "symfony/dom-crawler": {
         "version": "v4.3.5"
     },
@@ -375,6 +342,9 @@
             "src/Controller/.gitignore",
             "src/Kernel.php"
         ]
+    },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
     },
     "symfony/http-foundation": {
         "version": "v4.3.4"
@@ -436,8 +406,14 @@
     "symfony/polyfill-ctype": {
         "version": "v1.13.1"
     },
+    "symfony/polyfill-intl-grapheme": {
+        "version": "v1.20.0"
+    },
     "symfony/polyfill-intl-idn": {
         "version": "v1.12.0"
+    },
+    "symfony/polyfill-intl-normalizer": {
+        "version": "v1.20.0"
     },
     "symfony/polyfill-mbstring": {
         "version": "v1.12.0"
@@ -448,11 +424,17 @@
     "symfony/polyfill-php73": {
         "version": "v1.12.0"
     },
+    "symfony/polyfill-php80": {
+        "version": "v1.20.0"
+    },
     "symfony/process": {
         "version": "v4.3.5"
     },
     "symfony/property-access": {
         "version": "v4.3.6"
+    },
+    "symfony/property-info": {
+        "version": "v5.1.8"
     },
     "symfony/proxy-manager-bridge": {
         "version": "v4.4.1"
@@ -480,6 +462,9 @@
     },
     "symfony/service-contracts": {
         "version": "v1.1.6"
+    },
+    "symfony/string": {
+        "version": "v5.1.8"
     },
     "symfony/templating": {
         "version": "v4.4.0"

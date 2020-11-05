@@ -24,7 +24,6 @@ class RemoveDevelopmentCommandsPass implements CompilerPassInterface
     {
         $commandDefinitions = $container->findTaggedServiceIds('console.command');
 
-        /** @var Definition $commandDefinition */
         foreach ($commandDefinitions as $id => $tags) {
             $commandDefinition = $container->findDefinition($id);
             $commandClass = $commandDefinition->getClass();

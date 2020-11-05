@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Mfc\PasswordManager\Platform\Typo3;
 
+use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Driver\Statement;
 use Mfc\PasswordManager\Platform\AccountUpdaterInterface;
 use Mfc\PasswordManager\Platform\DatabaseUpdaterInterface;
 use Doctrine\DBAL\Connection;
@@ -141,6 +143,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
             ->setMaxResults(1);
         $this->logger->debug($query->getSQL());
 
+        /** @var Statement $statement */
         $statement = $query->execute();
         if (!($statement->rowCount() > 0)) {
             return false;
@@ -164,6 +167,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
             ->setMaxResults(1);
         $this->logger->debug($query->getSQL());
 
+        /** @var Statement $statement */
         $statement = $query->execute();
 
         $found = ($statement->rowCount() > 0);
