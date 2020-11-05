@@ -71,5 +71,7 @@ class PasswordRotateCommand extends Command
 
         $this->userStorage->changePasswordForAllUsers();
         $this->passwordRolloutService->rolloutUsers();
+
+        return 0;
     }
 }

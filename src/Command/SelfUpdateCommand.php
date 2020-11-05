@@ -48,10 +48,9 @@ class SelfUpdateCommand extends Command
         try {
             $result = $updater->update();
             $output->writeln($result ? "Updated!" : "No update needed!");
-            exit(0);
+            return 0;
         } catch (\Exception $e) {
             throw $e;
-            exit(1);
         }
     }
 }
