@@ -14,14 +14,14 @@ jobs:
 
       - name: Get commit message
         run: |
-          echo ::set-env name=commitmsg::$(git tag -l --format='%(contents)' ${GITHUB_REF/refs\/tags\//})
+          echo "commitmsg=$(git tag -l --format='%(contents)' ${GITHUB_REF/refs\/tags\//})" >> $GITHUB_ENV
       - name: Show commit message
-        run : echo $commitmsg
+        run : echo "${{ env.commitmsg }}"
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v1
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.3'
+          php-version: '7.4'
           extensions: ctype, intl, json, mbstring, mysqli, pdo
           coverage: none
 
@@ -45,7 +45,7 @@ jobs:
           bin/console cache:warmup
 
       - name: Build phar
-        uses: docker://php:7.3-cli-alpine3.10
+        uses: docker://php:7.4-cli-alpine3.10
         with:
           args: "/bin/sh -c \"apk --no-cache add git && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && curl -LO https://github.com/humbug/box/releases/download/3.8.3/box.phar && mv box.phar /usr/local/bin/box && chmod +x /usr/local/bin/box && box compile && chmod 755 pwmgr.phar\""
 
@@ -57,7 +57,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: $commitmsg
+          body: ${{ env.commitmsg }}
           draft: false
           prerelease: contains('-rc', ${GITHUB_REF/refs\/tags\//}) || contains('-alpha', ${GITHUB_REF/refs\/tags\//}) || contains('-beta', ${GITHUB_REF/refs\/tags\//})
 
