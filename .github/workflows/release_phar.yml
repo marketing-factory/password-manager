@@ -14,7 +14,9 @@ jobs:
 
       - name: Get commit message
         run: |
-          echo "commitmsg=$(git tag -l --format='%(contents)' ${GITHUB_REF/refs\/tags\//})" >> $GITHUB_ENV
+          echo 'commitmsg<<EOF' >> $GITHUB_ENV
+          echo $(git tag -l --format='%(contents)' ${GITHUB_REF/refs\/tags\//}) >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - name: Show commit message
         run : echo "${{ env.commitmsg }}"
 
