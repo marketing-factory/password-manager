@@ -12,6 +12,11 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    public function getProjectDir(): string
+    {
+        return \dirname(__DIR__);
+    }
+
     protected function build(ContainerBuilder $container): void
     {
         if (!$this->debug) {
