@@ -4,18 +4,13 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Eduardo Garces Hernandez",
-      "email": "egh@marketing-factory.de",
-      "role": "Developer"
-    },
-    {
       "name": "Christian Spoo",
-      "email": "cs@marketing-factory.de",
+      "email": "christian.spoo@marketing-factory.de",
       "role": "Developer"
     }
   ],
   "require": {
-    "php": "^7.4",
+    "php": "^8.1",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
@@ -25,7 +20,7 @@
     "doctrine/dbal": "^2.10",
     "erusev/parsedown": "^1.7",
     "hackzilla/password-generator": "^1.4",
-    "padraic/phar-updater": "^1.0",
+    "laravel-zero/phar-updater": "^v1.0.6",
     "symfony/console": "*",
     "symfony/dotenv": "*",
     "symfony/finder": "*",
@@ -35,11 +30,11 @@
     "symfony/mime": "*",
     "symfony/monolog-bundle": "^3.5",
     "symfony/property-access": "*",
-    "symfony/proxy-manager-bridge": "4.4.*",
+    "symfony/proxy-manager-bridge": "*",
     "symfony/security-core": "*",
     "symfony/serializer": "*",
     "symfony/templating": "*",
-    "symfony/twig-bundle": "4.4.*",
+    "symfony/twig-bundle": "*",
     "symfony/validator": "*",
     "symfony/yaml": "*",
     "twig/cssinliner-extra": "^3.0",
@@ -49,7 +44,8 @@
     "twig/twig": "^2.12|^3.0"
   },
   "require-dev": {
-    "codeception/codeception": "^3.0",
+    "roave/security-advisories": "dev-latest",
+    "codeception/codeception": "^5.1.2",
     "phpstan/extension-installer": "^1.0",
     "phpstan/phpstan-doctrine": "^0.12",
     "phpstan/phpstan-symfony": "^0.12",
@@ -61,9 +57,6 @@
       "*": "dist"
     },
     "sort-packages": true,
-    "platform": {
-      "php": "7.4.18"
-    },
     "allow-plugins": {
       "symfony/flex": true,
       "phpstan/extension-installer": true
@@ -82,6 +75,11 @@
   "replace": {
     "paragonie/random_compat": "2.*",
     "symfony/polyfill-iconv": "*",
+    "symfony/polyfill-php81": "*",
+    "symfony/polyfill-php80": "*",
+    "symfony/polyfill-php74": "*",
+    "symfony/polyfill-php73": "*",
+    "symfony/polyfill-php72": "*",
     "symfony/polyfill-php71": "*",
     "symfony/polyfill-php70": "*",
     "symfony/polyfill-php56": "*"
@@ -103,7 +101,7 @@
   "extra": {
     "symfony": {
       "allow-contrib": true,
-      "require": "4.4.*"
+      "require": "6.4.*"
     }
   }
 }
