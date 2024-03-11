@@ -17,11 +17,10 @@ class InsertAccountTransaction extends AbstractInsertTransaction
         $queryBuilder = $this->databaseConnection->createQueryBuilder();
         $query = $queryBuilder
             ->insert('be_users')
-            ->values($this->getData())
-        ;
+            ->values($this->getData());
 
         $this->logger->debug($query->getSQL());
-        $query->execute();
+        $query->executeStatement();
 
         $this->setLastInsertId((int)$this->databaseConnection->lastInsertId());
     }

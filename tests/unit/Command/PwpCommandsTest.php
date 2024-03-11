@@ -14,7 +14,7 @@ class PwpCommandsTest extends KernelTestCase
     /**
      * @throws \Exception
      */
-    public function testCreateUserPwRollout()
+    public function testCreateUserPwRollout(): void
     {
         $kernel = new Kernel('test', true);
         $application = new Application($kernel);

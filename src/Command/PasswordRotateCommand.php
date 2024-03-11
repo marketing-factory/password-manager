@@ -22,34 +22,17 @@ class PasswordRotateCommand extends Command
     use DryRunTrait;
 
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var PasswordRolloutService
-     */
-    private $passwordRolloutService;
-    /**
-     * @var UserStorage
-     */
-    private $userStorage;
-
-    /**
      * PasswordRotateCommand constructor.
      * @param ConfigurationService $configurationService
      * @param PasswordRolloutService $passwordRolloutService
      * @param UserStorage $userStorage
      */
     public function __construct(
-        ConfigurationService $configurationService,
-        PasswordRolloutService $passwordRolloutService,
-        UserStorage $userStorage
+        private ConfigurationService $configurationService,
+        private PasswordRolloutService $passwordRolloutService,
+        private UserStorage $userStorage
     ) {
         parent::__construct('users:rotate-passwords');
-
-        $this->configurationService = $configurationService;
-        $this->passwordRolloutService = $passwordRolloutService;
-        $this->userStorage = $userStorage;
     }
 
     protected function configure()

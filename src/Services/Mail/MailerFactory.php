@@ -17,23 +17,12 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class MailerFactory
 {
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
      * MailerFactory constructor.
-     * @param ConfigurationService $configurationService
-     * @param EventDispatcherInterface $eventDispatcher
      */
-    public function __construct(ConfigurationService $configurationService, EventDispatcherInterface $eventDispatcher)
-    {
-        $this->configurationService = $configurationService;
-        $this->eventDispatcher = $eventDispatcher;
+    public function __construct(
+        private ConfigurationService $configurationService,
+        private readonly EventDispatcherInterface $eventDispatcher
+    ) {
     }
 
     public function buildMailer(): MailerInterface

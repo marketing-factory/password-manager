@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Mfc\PasswordManager\Platform\Database;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\RetryableException;
 use Psr\Log\LoggerInterface;
 
@@ -15,49 +15,38 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractTransaction
 {
-    /**
-     * @var Connection
-     */
-    protected $databaseConnection;
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
 
     /**
      * AbstractTransaction constructor.
-     * @param Connection $databaseConnection
-     * @param LoggerInterface $logger
      */
-    public function __construct(Connection $databaseConnection, LoggerInterface $logger)
+    public function __construct(protected Connection $databaseConnection, protected LoggerInterface $logger)
     {
-        $this->databaseConnection = $databaseConnection;
-        $this->logger = $logger;
     }
 
     abstract protected function executeQueries(): void;
 
-    public function execute()
+    public function execute(): mixed
     {
-        $this->logger->info(get_class($this) . ' (Begin)');
+        $this->logger->info(static::class . ' (Begin)');
         try {
             $this->executeQueries();
+            $this->logger->info(static::class . ' (Commit)');
 
-            $this->logger->info(get_class($this) . ' (Commit)');
+            return null;
         } catch (RetryableException $e) {
             throw $e;
-        } catch (DBALException $e) {
+        } catch (Exception $e) {
             $this->logger->error('DBAL exception caught: {message}', [
                 'message' => $e->getMessage(),
                 'exception' => $e
             ]);
-            $this->logger->error('Transaction ' . get_class($this) . ' failed', [ 'transaction' => __CLASS__ ]);
+            $this->logger->error('Transaction ' . static::class . ' failed', ['transaction' => self::class]);
 
             $originalException = $e;
             do {
                 $this->logger->error(strtok($e->getMessage(), PHP_EOL));
                 $this->logger->debug(
-                    get_class($e)
+                    $e::class
                     . ' thrown in ' . $e->getFile()
                     . ' @ ' . $e->getLine()
                     . PHP_EOL . $e->getTraceAsString()
@@ -66,7 +55,7 @@ abstract class AbstractTransaction
                 $e = $e->getPrevious();
             } while ($e->getPrevious() instanceof \Exception);
 
-            $this->logger->info(get_class($this) . ' (Rollback)');
+            $this->logger->info(static::class . ' (Rollback)');
 
             throw new TransactionFailedException('Transaction failed', 1503647119, $originalException);
         }

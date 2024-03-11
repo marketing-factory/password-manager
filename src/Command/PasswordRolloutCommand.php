@@ -22,27 +22,15 @@ class PasswordRolloutCommand extends Command
     use DryRunTrait;
 
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var PasswordRolloutService
-     */
-    private $passwordRolloutService;
-
-    /**
      * PasswordRolloutCommand constructor.
      * @param ConfigurationService $configurationService
      * @param PasswordRolloutService $passwordRolloutService
      */
     public function __construct(
-        ConfigurationService $configurationService,
-        PasswordRolloutService $passwordRolloutService
+        private ConfigurationService $configurationService,
+        private PasswordRolloutService $passwordRolloutService
     ) {
         parent::__construct('users:rollout');
-
-        $this->configurationService = $configurationService;
-        $this->passwordRolloutService = $passwordRolloutService;
     }
 
     protected function configure()

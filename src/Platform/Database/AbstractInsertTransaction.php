@@ -15,11 +15,6 @@ use Psr\Log\LoggerInterface;
 abstract class AbstractInsertTransaction extends AbstractTransaction
 {
     /**
-     * @var array
-     */
-    private $data;
-
-    /**
      * @var int
      */
     private $lastInsertId;
@@ -32,10 +27,9 @@ abstract class AbstractInsertTransaction extends AbstractTransaction
     public function __construct(
         Connection $databaseConnection,
         LoggerInterface $logger,
-        array $data
+        private readonly array $data
     ) {
         parent::__construct($databaseConnection, $logger);
-        $this->data = $data;
     }
 
     /**

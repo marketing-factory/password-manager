@@ -15,11 +15,6 @@ use Psr\Log\LoggerInterface;
 class UpdateBeSecurePwLastChangeTransaction extends AbstractTransaction
 {
     /**
-     * @var string
-     */
-    private $username;
-
-    /**
      * UpdateBeSecurePwLastChangeTransaction constructor.
      * @param Connection $databaseConnection
      * @param LoggerInterface $logger
@@ -28,10 +23,9 @@ class UpdateBeSecurePwLastChangeTransaction extends AbstractTransaction
     public function __construct(
         Connection $databaseConnection,
         LoggerInterface $logger,
-        string $username
+        private readonly string $username
     ) {
         parent::__construct($databaseConnection, $logger);
-        $this->username = $username;
     }
 
     protected function executeQueries(): void
@@ -39,10 +33,10 @@ class UpdateBeSecurePwLastChangeTransaction extends AbstractTransaction
         $queryBuilder = $this->databaseConnection->createQueryBuilder();
         $query = $queryBuilder
             ->update('be_users')
-            ->set('tx_besecurepw_lastpwchange', $this->databaseConnection->quote(time()))
+            ->set('tx_besecurepw_lastpwchange', $this->databaseConnection->quote((string)time()))
             ->where($queryBuilder->expr()->eq('username', $this->databaseConnection->quote($this->username)));
 
         $this->logger->debug($query->getSQL());
-        $query->execute();
+        $query->executeStatement();
     }
 }

@@ -23,25 +23,13 @@ class CreateUserCommand extends Command
     use ConfigDirectoryTrait;
 
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var UserStorage
-     */
-    private $userStorage;
-
-    /**
      * CreateUserCommand constructor.
      * @param ConfigurationService $configurationService
      * @param UserStorage $userStorage
      */
-    public function __construct(ConfigurationService $configurationService, UserStorage $userStorage)
+    public function __construct(private ConfigurationService $configurationService, private UserStorage $userStorage)
     {
         parent::__construct('users:create');
-
-        $this->configurationService = $configurationService;
-        $this->userStorage = $userStorage;
     }
 
     protected function configure()
@@ -57,10 +45,9 @@ class CreateUserCommand extends Command
     }
 
     /**
-     * @param mixed $input
      * @return string
      */
-    public function validateEmailAddress($input): string
+    public function validateEmailAddress(mixed $input): string
     {
         $input = trim((string)$input);
 
@@ -100,11 +87,11 @@ class CreateUserCommand extends Command
 
         $user = $this->userStorage->loadUser($username);
         if (!is_null($user)) {
-            throw new \RuntimeException("User \"${username}\" already exists. Pick another name");
+            throw new \RuntimeException("User \"{$username}\" already exists. Pick another name");
         }
 
         if (empty($email = $input->getArgument('email'))) {
-            $email = $io->ask('Please enter the email address of the new user', null, [$this, 'validateEmailAddress']);
+            $email = $io->ask('Please enter the email address of the new user', null, $this->validateEmailAddress(...));
         } else {
             $this->validateEmailAddress($email);
         }

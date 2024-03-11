@@ -12,53 +12,18 @@ namespace Mfc\PasswordManager\Platform;
 class Platform
 {
     /**
-     * @var string
-     */
-    private $hostname;
-    /**
-     * @var string
-     */
-    private $database;
-    /**
-     * @var string
-     */
-    private $type;
-    /**
-     * @var bool
-     */
-    private $manageAdminUsers = false;
-    /**
-     * @var string|null
-     */
-    private $username;
-    /**
-     * @var string|null
-     */
-    private $password;
-
-    /**
      * Platform constructor.
-     * @param string $hostname
-     * @param string $type
-     * @param string $database
-     * @param bool $manageAdminUsers
      * @param string|null $username
      * @param string|null $password
      */
     public function __construct(
-        string $hostname,
-        string $type,
-        string $database,
-        bool $manageAdminUsers = false,
-        ?string $username = null,
-        ?string $password = null
+        private readonly string $hostname,
+        private readonly string $type,
+        private readonly string $database,
+        private readonly bool $manageAdminUsers = false,
+        private readonly ?string $username = null,
+        private readonly ?string $password = null
     ) {
-        $this->hostname = $hostname;
-        $this->type = $type;
-        $this->database = $database;
-        $this->manageAdminUsers = $manageAdminUsers;
-        $this->username = $username;
-        $this->password = $password;
     }
 
     /**

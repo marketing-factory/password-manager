@@ -20,7 +20,7 @@ class RemoveDevelopmentCommandsPass implements CompilerPassInterface
     /**
      * @inheritDoc
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $commandDefinitions = $container->findTaggedServiceIds('console.command');
 
@@ -33,7 +33,8 @@ class RemoveDevelopmentCommandsPass implements CompilerPassInterface
                 continue;
             }
 
-            if (0 === strpos($commandClass, 'Symfony\\Bundle\\') || 0 === strpos($commandClass, 'Symfony\\Bridge\\')) {
+            if (str_starts_with((string)$commandClass, 'Symfony\\Bundle\\') || str_starts_with((string)$commandClass,
+                    'Symfony\\Bridge\\')) {
                 $container->removeDefinition($id);
             }
         }

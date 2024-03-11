@@ -15,15 +15,6 @@ use Psr\Log\LoggerInterface;
 class UpdateAccountTransaction extends AbstractTransaction
 {
     /**
-     * @var string
-     */
-    private $username;
-    /**
-     * @var array
-     */
-    private $data;
-
-    /**
      * UpdateAccountTransaction constructor.
      * @param Connection $databaseConnection
      * @param LoggerInterface $logger
@@ -33,12 +24,10 @@ class UpdateAccountTransaction extends AbstractTransaction
     public function __construct(
         Connection $databaseConnection,
         LoggerInterface $logger,
-        string $username,
-        array $data
+        private readonly string $username,
+        private readonly array $data
     ) {
         parent::__construct($databaseConnection, $logger);
-        $this->username = $username;
-        $this->data = $data;
     }
 
     protected function executeQueries(): void
@@ -53,6 +42,6 @@ class UpdateAccountTransaction extends AbstractTransaction
         }
 
         $this->logger->debug($query->getSQL());
-        $query->execute();
+        $query->executeStatement();
     }
 }

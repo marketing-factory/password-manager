@@ -21,25 +21,13 @@ class ShowUsersCommand extends Command
     use ConfigDirectoryTrait;
 
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var UserStorage
-     */
-    private $userStorage;
-
-    /**
      * ShowUsersCommand constructor.
      * @param ConfigurationService $configurationService
      * @param UserStorage $userStorage
      */
-    public function __construct(ConfigurationService $configurationService, UserStorage $userStorage)
+    public function __construct(private ConfigurationService $configurationService, private UserStorage $userStorage)
     {
         parent::__construct('users:show');
-
-        $this->configurationService = $configurationService;
-        $this->userStorage = $userStorage;
     }
 
     protected function configure()

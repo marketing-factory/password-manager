@@ -23,7 +23,7 @@ class SelfUpdateCommand extends Command
         parent::__construct('self-update');
     }
 
-    public function configure()
+    public function configure(): void
     {
         $this->setDescription('Updates MFC password manager to the latest version');
     }
@@ -37,9 +37,7 @@ class SelfUpdateCommand extends Command
         $updater->getStrategy()->setPharName('pwmgr.phar');
         $updater->getStrategy()->setCurrentLocalVersion($currentVersion);
 
-        /**
-         *
-         */
+        /** @phpstan-ignore-next-line */
         if ($currentVersion === '@package_version' . '@'
             || VersionParser::parseStability($currentVersion) !== 'stable') {
             $updater->getStrategy()->setStability(GithubStrategy::ANY);

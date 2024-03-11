@@ -41,43 +41,14 @@ class UserStorage
     private $dryRun = false;
 
     /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-    /**
-     * @var MailerInterface
-     */
-    private $mailer;
-    /**
-     * @var array
-     */
-    private $users;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * UserStorage constructor.
-     * @param ConfigurationService $configurationService
-     * @param SerializerInterface $serializer
-     * @param MailerInterface $mailer
-     * @param LoggerInterface $logger
      */
     public function __construct(
-        ConfigurationService $configurationService,
-        SerializerInterface $serializer,
-        MailerInterface $mailer,
-        LoggerInterface $logger
+        private ConfigurationService $configurationService,
+        private readonly SerializerInterface $serializer,
+        private readonly MailerInterface $mailer,
+        private readonly LoggerInterface $logger
     ) {
-        $this->configurationService = $configurationService;
-        $this->serializer = $serializer;
-        $this->mailer = $mailer;
-        $this->logger = $logger;
     }
 
     public function getUsers(): array
@@ -220,7 +191,7 @@ class UserStorage
         return $user;
     }
 
-    private function sendPlainPasswordToUser(User $user, string $plainPassword)
+    private function sendPlainPasswordToUser(User $user, string $plainPassword): void
     {
         $username = $user->getUsername();
 
@@ -259,7 +230,6 @@ class UserStorage
     }
 
     /**
-     * @param string $username
      * @return string
      */
     private function getUserFilename(string $username): string

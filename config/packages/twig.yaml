@@ -6,3 +6,7 @@ twig:
   cache: false
   paths:
     '%kernel.project_dir%/templates/email': email
+
+when@test:
+  twig:
+    strict_variables: true

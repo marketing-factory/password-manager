@@ -44,7 +44,6 @@ class User
     }
 
     /**
-     * @param string $username
      * @return User
      */
     public function setUsername(string $username): User
@@ -62,7 +61,6 @@ class User
     }
 
     /**
-     * @param string $firstname
      * @return User
      */
     public function setFirstname(string $firstname): User
@@ -80,7 +78,6 @@ class User
     }
 
     /**
-     * @param string $lastname
      * @return User
      */
     public function setLastname(string $lastname): User
@@ -98,7 +95,6 @@ class User
     }
 
     /**
-     * @param string $email
      * @return User
      */
     public function setEmail(string $email): User
@@ -116,7 +112,6 @@ class User
     }
 
     /**
-     * @param array $hashedPasswords
      * @return User
      */
     public function setHashedPasswords(array $hashedPasswords): User
@@ -134,7 +129,6 @@ class User
     }
 
     /**
-     * @param bool $active
      * @return User
      */
     public function setActive(bool $active): User

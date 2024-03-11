@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace Mfc\PasswordManager\Platform;
 
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
 /**
  * Interface AccountUpdaterInterface
  * @package Mfc\PasswordManager\Platform
  * @author Christian Spoo <cs@marketing-factory.de>
  */
+#[AutoconfigureTag('account_updater')]
 interface AccountUpdaterInterface
 {
     public const ALGO_ARGON2I = 'argon2i';
@@ -27,13 +30,6 @@ interface AccountUpdaterInterface
     public function getHashAlgorithm(): string;
 
     /**
-     * @param string $username
-     * @param string $passwordHash
-     * @param bool $isAdmin
-     * @param string $firstname
-     * @param string $lastname
-     * @param string $email
-     * @param bool $isActive
      * @return bool
      */
     public function updateAccountByUsername(

@@ -15,11 +15,6 @@ use Psr\Log\LoggerInterface;
 class DemoteUnknownAccountsTransaction extends AbstractTransaction
 {
     /**
-     * @var array
-     */
-    private $whitelistedAccounts;
-
-    /**
      * UpdateAccountTransaction constructor.
      * @param Connection $databaseConnection
      * @param LoggerInterface $logger
@@ -28,10 +23,9 @@ class DemoteUnknownAccountsTransaction extends AbstractTransaction
     public function __construct(
         Connection $databaseConnection,
         LoggerInterface $logger,
-        array $whitelistedAccounts
+        private readonly array $whitelistedAccounts
     ) {
         parent::__construct($databaseConnection, $logger);
-        $this->whitelistedAccounts = $whitelistedAccounts;
     }
 
     protected function executeQueries(): void
@@ -39,13 +33,13 @@ class DemoteUnknownAccountsTransaction extends AbstractTransaction
         $queryBuilder = $this->databaseConnection->createQueryBuilder();
         $query = $queryBuilder
             ->update('be_users')
-            ->set('admin', $this->databaseConnection->quote(0))
+            ->set('admin', $this->databaseConnection->quote('0'))
             ->where($queryBuilder->expr()->notIn(
                 'username',
-                array_map([$this->databaseConnection, 'quote'], $this->whitelistedAccounts)
+                array_map($this->databaseConnection->quote(...), $this->whitelistedAccounts)
             ));
 
         $this->logger->debug($query->getSQL());
-        $query->execute();
+        $query->executeStatement();
     }
 }

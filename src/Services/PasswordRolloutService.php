@@ -11,6 +11,7 @@ use Mfc\PasswordManager\Platform\DatabaseUpdaterInterface;
 use Mfc\PasswordManager\Platform\Platform;
 use Mfc\PasswordManager\Platform\PlatformRegistry;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * Class PasswordRolloutService
@@ -20,43 +21,19 @@ use Psr\Log\LoggerInterface;
 class PasswordRolloutService
 {
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
-    /**
-     * @var UserStorage
-     */
-    private $userStorage;
-    /**
-     * @var PlatformRegistry
-     */
-    private $platformRegistry;
-    /**
      * @var bool
      */
     private $dryRun;
 
     /**
      * PasswordRolloutService constructor.
-     * @param LoggerInterface $logger
-     * @param ConfigurationService $configurationService
-     * @param UserStorage $userStorage
-     * @param PlatformRegistry $platformRegistry
      */
     public function __construct(
-        LoggerInterface $logger,
-        ConfigurationService $configurationService,
-        UserStorage $userStorage,
-        PlatformRegistry $platformRegistry
+        private readonly LoggerInterface $logger,
+        private ConfigurationService $configurationService,
+        private readonly UserStorage $userStorage,
+        private readonly PlatformRegistry $platformRegistry
     ) {
-        $this->logger = $logger;
-        $this->configurationService = $configurationService;
-        $this->userStorage = $userStorage;
-        $this->platformRegistry = $platformRegistry;
     }
 
     public function enableDryRun(): self
@@ -81,9 +58,7 @@ class PasswordRolloutService
     public function rolloutUsers(): self
     {
         $users = $this->userStorage->getUsers();
-        $users = array_filter($users, function (User $user) {
-            return $user->isActive();
-        });
+        $users = array_filter($users, fn(User $user) => $user->isActive());
 
         $this->doRollout($users, true);
 
@@ -91,9 +66,7 @@ class PasswordRolloutService
     }
 
     /**
-     * @param array $users
-     * @param bool $demoteUnknownUsers
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws Throwable
      */
     private function doRollout(array $users, bool $demoteUnknownUsers = false): void
     {

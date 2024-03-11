@@ -10,6 +10,7 @@ use Mfc\PasswordManager\Platform\Typo3\Typo3Updater;
 use Mfc\PasswordManager\Platform\Typo3\Typo3v6Updater;
 use Mfc\PasswordManager\Platform\Typo3\Typo3v7Updater;
 use Mfc\PasswordManager\Services\ConfigurationService;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
  * Class PlatformRegistry
@@ -21,43 +22,25 @@ class PlatformRegistry
     /**
      * @var array
      */
-    private $updaters = [];
+    private array $updaters = [];
 
-    private const PLATFORM_MAPPINGS = [
-        'typo3' => Typo3Updater::class,
-        'typo3_9' => Typo3Updater::class,
-        'typo3_8' => Typo3v7Updater::class,
-        'typo3_7' => Typo3v7Updater::class,
-        'typo3_6' => Typo3v6Updater::class,
-    ];
-    /**
-     * @var ConfigurationService
-     */
-    private $configurationService;
+    public function __construct(
+        private readonly ConfigurationService $configurationService,
+        #[TaggedIterator('account_updater')]
+        iterable $updaters,
+    ) {
 
-    /**
-     * PlatformRegistry constructor.
-     * @param ConfigurationService $configurationService
-     */
-    public function __construct(ConfigurationService $configurationService)
-    {
-        $this->configurationService = $configurationService;
-    }
+        /** @var AccountUpdaterInterface $updater */
+        foreach ($updaters as $updater) {
+            $supportedTypes = $updater->getSupportedPlatformTypes();
 
-    /**
-     * @param AccountUpdaterInterface $updater
-     */
-    public function registerUpdater(AccountUpdaterInterface $updater): void
-    {
-        $supportedTypes = $updater->getSupportedPlatformTypes();
-
-        foreach ($supportedTypes as $supportedType) {
-            $this->updaters[$supportedType] = $updater;
+            foreach ($supportedTypes as $supportedType) {
+                $this->updaters[$supportedType] = $updater;
+            }
         }
     }
 
     /**
-     * @param Platform $platform
      * @return AccountUpdaterInterface
      */
     public function getUpdaterForPlatform(Platform $platform): AccountUpdaterInterface

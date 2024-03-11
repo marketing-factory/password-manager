@@ -13,7 +13,7 @@ use Mfc\PasswordManager\Tests\UnitTester;
  */
 class ConfigurationServiceCest
 {
-    public function testIfValidConfigurationGetsReadCorrectly(UnitTester $I)
+    public function testIfValidConfigurationGetsReadCorrectly(UnitTester $I): void
     {
         $configurationService = new ConfigurationService();
         $configurationService->loadConfiguration(__DIR__ . '/../../_data/config/config_valid.yaml');

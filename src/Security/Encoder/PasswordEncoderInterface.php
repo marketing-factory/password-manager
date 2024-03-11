@@ -11,7 +11,6 @@ namespace Mfc\PasswordManager\Security\Encoder;
 interface PasswordEncoderInterface
 {
     /**
-     * @param string $password
      * @return string
      */
     public function encodePassword(string $password): string;

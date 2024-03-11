@@ -21,18 +21,12 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
      * @var Connection
      */
     private $databaseConnection;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
 
     /**
      * Typo3Updater constructor.
-     * @param LoggerInterface $logger
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(private readonly LoggerInterface $logger)
     {
-        $this->logger = $logger;
     }
 
     /**
@@ -80,9 +74,9 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                         )
                     ),
                     'email' => $this->databaseConnection->quote($email),
-                    'admin' => $this->databaseConnection->quote($isAdmin ? 1 : 0),
-                    'disable' => $this->databaseConnection->quote($isActive ? 0 : 1),
-                    'deleted' => $this->databaseConnection->quote(0),
+                    'admin' => $this->databaseConnection->quote($isAdmin ? '1' : '0'),
+                    'disable' => $this->databaseConnection->quote($isActive ? '0' : '1'),
+                    'deleted' => $this->databaseConnection->quote('0'),
                 ]
             ))->execute();
         } else {
@@ -100,11 +94,11 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                         )
                     ),
                     'email' => $this->databaseConnection->quote($email),
-                    'admin' => $this->databaseConnection->quote($isAdmin ? 1 : 0),
-                    'deleted' => $this->databaseConnection->quote(0),
-                    'disable' => $this->databaseConnection->quote($isActive ? 0 : 1),
-                    'tstamp' => $this->databaseConnection->quote(time()),
-                    'crdate' => $this->databaseConnection->quote(time()),
+                    'admin' => $this->databaseConnection->quote($isAdmin ? '1' : '0'),
+                    'deleted' => $this->databaseConnection->quote('0'),
+                    'disable' => $this->databaseConnection->quote($isActive ? '0' : '1'),
+                    'tstamp' => $this->databaseConnection->quote((string)time()),
+                    'crdate' => $this->databaseConnection->quote((string)time()),
                 ]
             ))->execute();
 
@@ -130,7 +124,6 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
     }
 
     /**
-     * @param string $username
      * @return bool
      */
     private function beSecurePwIsPresent(string $username): bool
@@ -143,18 +136,16 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
             ->setMaxResults(1);
         $this->logger->debug($query->getSQL());
 
-        /** @var Statement $statement */
-        $statement = $query->execute();
-        if (!($statement->rowCount() > 0)) {
+        $result = $query->executeQuery();
+        if (!($result->rowCount() > 0)) {
             return false;
         }
 
-        $row = $statement->fetch();
+        $row = $result->fetchAssociative();
         return isset($row['tx_besecurepw_lastpwchange']);
     }
 
     /**
-     * @param string $username
      * @return bool
      */
     private function accountIsPresent(string $username): bool
@@ -167,10 +158,8 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
             ->setMaxResults(1);
         $this->logger->debug($query->getSQL());
 
-        /** @var Statement $statement */
-        $statement = $query->execute();
-
-        $found = ($statement->rowCount() > 0);
+        $result = $query->executeQuery();
+        $found = ($result->rowCount() > 0);
         return $found;
     }
 
@@ -189,33 +178,25 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
         return true;
     }
 
-    /**
-     * @param Connection $databaseConnection
-     * @return mixed
-     */
-    public function setDatabaseConnection(Connection $databaseConnection)
+    public function setDatabaseConnection(Connection $databaseConnection): void
     {
         $this->databaseConnection = $databaseConnection;
     }
 
-    /**
-     * @return string
-     */
     public function getHashAlgorithm(): string
     {
         return AccountUpdaterInterface::ALGO_ARGON2I;
     }
 
-    /**
-     * @return array
-     */
     public function getSupportedPlatformTypes(): array
     {
         return [
             'typo3',
             'typo3_9',
             'typo3_10',
-            'typo3_11'
+            'typo3_11',
+            'typo3_12',
+            'typo3_13'
         ];
     }
 }

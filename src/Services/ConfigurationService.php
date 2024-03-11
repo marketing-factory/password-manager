@@ -11,6 +11,7 @@ use Mfc\PasswordManager\Configuration\Configuration;
 use Mfc\PasswordManager\Platform\Platform;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -23,30 +24,18 @@ use Traversable;
  */
 class ConfigurationService implements IteratorAggregate, ArrayAccess
 {
-    /**
-     * @var array
-     */
-    private $config = [];
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-    /**
-     * @var PropertyAccessorInterface
-     */
-    private $accessor;
+    private array $config = [];
+    private readonly PropertyAccessor $accessor;
 
     /**
      * ConfigurationService constructor.
-     * @param SerializerInterface $serializer
      */
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(private readonly SerializerInterface $serializer)
     {
-        $this->serializer = $serializer;
         $this->accessor = PropertyAccess::createPropertyAccessor();
     }
 
-    public function loadConfiguration(string $file)
+    public function loadConfiguration(string $file): void
     {
         if (!is_readable($file)) {
             throw new InvalidArgumentException(sprintf('The file "%s" does not exist.', $file));
@@ -70,7 +59,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
         chdir($oldcwd);
     }
 
-    private function loadPlatformFile(string $platformFile)
+    private function loadPlatformFile(string $platformFile): void
     {
         if (!file_exists($platformFile) || !is_readable($platformFile)) {
             throw new InvalidArgumentException(sprintf('The platform file "%s" does not exist.', $platformFile));
@@ -89,7 +78,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
      * <b>Traversable</b>
      * @since 5.0.0
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->config);
     }
@@ -106,7 +95,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         return $this->accessor->isReadable($this->config, $offset);
     }
@@ -120,7 +109,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->accessor->getValue($this->config, $offset);
     }
@@ -137,7 +126,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->accessor->setValue($this->config, $offset, $value);
     }
@@ -151,7 +140,7 @@ class ConfigurationService implements IteratorAggregate, ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         $this->accessor->setValue($this->config, $offset, null);
     }

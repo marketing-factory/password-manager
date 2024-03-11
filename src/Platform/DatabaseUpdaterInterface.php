@@ -13,7 +13,6 @@ use Doctrine\DBAL\Connection;
 interface DatabaseUpdaterInterface
 {
     /**
-     * @param Connection $databaseConnection
      * @return mixed
      */
     public function setDatabaseConnection(Connection $databaseConnection);
