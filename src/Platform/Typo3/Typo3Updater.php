@@ -79,7 +79,7 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                     'deleted' => $this->databaseConnection->quote('0'),
                 ]
             ))->execute();
-        } else {
+        } elseif ($isActive) {
             $userId = (new InsertAccountTransaction(
                 $this->databaseConnection,
                 $this->logger,
@@ -106,6 +106,8 @@ class Typo3Updater implements AccountUpdaterInterface, DatabaseUpdaterInterface
                 'username' => $username,
                 'user_id' => $userId
             ]);
+        } else {
+            return false;
         }
 
         if ($this->beSecurePwIsPresent($username)) {
