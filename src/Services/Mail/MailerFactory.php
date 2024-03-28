@@ -28,7 +28,7 @@ class MailerFactory
     public function buildMailer(): MailerInterface
     {
         $mailDsn = $this->configurationService['[mail][dsn]'];
-        $transport = Transport::fromDsn($mailDsn);
+        $transport = Transport::fromDsn($mailDsn, $this->eventDispatcher);
 
         return new Mailer($transport, null, $this->eventDispatcher);
     }
