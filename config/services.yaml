@@ -20,6 +20,9 @@ services:
     resource: '../src/*'
     exclude: '../src/{DependencyInjection,Entity,Migrations,Model,Platform/Platform.php,Tests,Kernel.php}'
 
+  console.command.mailer_test:
+    class: Mfc\PasswordManager\Command\MailerTestCommand
+
 #  Symfony\Component\Mailer\MailerInterface:
 #    factory: ['@Mfc\PasswordManager\Services\Mail\MailerFactory', 'buildMailer']
 #    lazy: true

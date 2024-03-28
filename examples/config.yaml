@@ -1,6 +1,6 @@
 mfc_password_manager:
   mail:
-    dsn: "smtp://srelay-int.web-factory.de"
+    dsn: "smtp://srelay-ext.web-factory.de:25?verify_peer=false"
   database:
     default_credentials:
       username: db_pusher_user

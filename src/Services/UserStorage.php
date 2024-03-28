@@ -11,11 +11,11 @@ use Mfc\PasswordManager\Security\Encoder\CryptMd5PasswordEncoder;
 use Mfc\PasswordManager\Security\Encoder\Md5PasswordEncoder;
 use Mfc\PasswordManager\Security\Encoder\PasswordEncoderInterface;
 use Mfc\PasswordManager\Security\Encoder\Sha1PasswordEncoder;
+use Mfc\PasswordManager\Services\Mail\MailerFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\NotificationEmail;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -45,8 +45,8 @@ class UserStorage
      */
     public function __construct(
         private ConfigurationService $configurationService,
+        private readonly MailerFactory $mailerFactory,
         private readonly SerializerInterface $serializer,
-        private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -214,7 +214,8 @@ class UserStorage
             )
             ->importance(NotificationEmail::IMPORTANCE_HIGH);
 
-        $this->mailer->send($email);
+        $mailer = $this->mailerFactory->buildMailer();
+        $mailer->send($email);
     }
 
     public function enableDryRun(): self
